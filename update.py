@@ -14,25 +14,30 @@ GOOGLE_REFRESH_TOKEN = os.environ["GOOGLE_REFRESH_TOKEN"]
 
 # --- Google Calendar ---
 def get_events():
-	creds = Credentials(
-		token=None,
-		refresh_token=GOOGLE_REFRESH_TOKEN,
-		client_id=GOOGLE_CLIENT_ID,
-		client_secret=GOOGLE_CLIENT_SECRET,
-		token_uri="https://oauth2.googleapis.com/token",
-	)
-	service = build("calendar", "v3", credentials=creds)
-	now = datetime.now(timezone.utc)
-	start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-	end = now.replace(hour=23, minute=59, second=59, microsecond=0).isoformat()
-	result = service.events().list(
-		calendarId="primary",
-		timeMin=start,
-		timeMax=end,
-		singleEvents=True,
-		orderBy="startTime"
-	).execute()
-	return result.get("items", [])
+    creds = Credentials(
+        token=None,
+        refresh_token=GOOGLE_REFRESH_TOKEN,
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        token_uri="https://oauth2.googleapis.com/token",
+    )
+    service = build("calendar", "v3", credentials=creds)
+    now = datetime.now(timezone.utc)
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    end = now.replace(hour=23, minute=59, second=59, microsecond=0).isoformat()
+    calendars = service.calendarList().list().execute()
+    all_events = []
+    for cal in calendars.get("items", []):
+        cal_id = cal["id"]
+        result = service.events().list(
+            calendarId=cal_id,
+            timeMin=start,
+            timeMax=end,
+            singleEvents=True,
+            orderBy="startTime"
+        ).execute()
+        all_events.extend(result.get("items", []))
+    return all_events
 
 # --- Notion ---
 def get_todos():
