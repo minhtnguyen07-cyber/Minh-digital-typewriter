@@ -83,10 +83,16 @@ def build_events_html(events):
             en = datetime.fromisoformat(end).strftime("%H:%M")
             time_str = f'<span class="time">{s}&ndash;{en}</span>'
         link = e.get("hangoutLink", "")
+        if not link:
+            for field in [e.get("description", ""), e.get("location", "")]:
+                if field and "http" in field:
+                    match = re.search(r'https?://\S+', field)
+                    if match:
+                        link = match.group(0)
+                        break
         link_html = f'<a href="{link}">link</a>' if link else ""
         items += f'<li><span class="event-icon event-personal">personal</span><span class="label">{title}</span>{time_str}{link_html}</li>\n'
     return items
-
 
 def build_todos_html(todos):
     if not todos:
