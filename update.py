@@ -37,6 +37,7 @@ def get_events():
             orderBy="startTime"
         ).execute()
         all_events.extend(result.get("items", []))
+        print("Events found:", [e.get("summary") for e in all_events])
     return all_events
 
 # --- Notion ---
